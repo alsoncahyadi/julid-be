@@ -16,6 +16,7 @@ class Complaint(m.Model):
     comment_id = m.CharField(verbose_name="Instagram Post ID", max_length = 20)
     created_at = m.DateTimeField(auto_now_add=True)
     updated_at = m.DateTimeField(auto_now=True)
+    username = m.CharField(verbose_name="Instagram Username", max_length = 30, null=True)
 
     ready_at = m.DateTimeField()
     wip_at = m.DateTimeField()
