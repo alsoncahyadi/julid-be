@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 import dj_database_url
 import django_heroku
+import sys
+
+sys.tracebacklimit=5
+
+is_prod = os.getenv('IS_PRODUCTION') == "TRUE"
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -44,7 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_auth',
-    'trello',
+    'trel',
 ]
 
 MIDDLEWARE = [
@@ -182,3 +187,15 @@ LOGGING = {
 }
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
+# Mongo DB
+from pymongo import MongoClient, ASCENDING, DESCENDING
+
+if is_prod:
+    mongo_client = MongoClient("mongodb://{username}:{password}@ds231758.mlab.com:31758/".format(username=os.getenv("MONGO_DB_USERNAME"), password=os.getenv("MONGO_DB_PASSWORD")))
+    mongo_db = mongo_client["heroku_2cs68jn3"]
+else:
+    mongo_client = MongoClient("mongodb://admin:admin@localhost:27017/")
+    mongo_db = mongo_client["julid"]
+mongo_logs = mongo_db["logs"]
+# import pdb; pdb.set_trace()

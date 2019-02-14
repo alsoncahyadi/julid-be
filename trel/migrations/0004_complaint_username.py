@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('trello', '0003_auto_20190214_1108'),
+        ('trel', '0003_auto_20190214_1108'),
     ]
 
     operations = [

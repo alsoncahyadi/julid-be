@@ -6,7 +6,7 @@ from rest_framework import pagination
 from rest_framework.response import Response
 from rest_framework.fields import SerializerMethodField
 from datetime import datetime
-from trello.models import *
+from trel.models import *
 
 # Serializer
 class ComplaintSerializer(s.ModelSerializer):
