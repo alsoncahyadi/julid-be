@@ -18,7 +18,6 @@ class Webhook(APIView):
 
     def post(self, request):
         logging.info(request.data)
-        pass
 
 
 def healthz(request):
