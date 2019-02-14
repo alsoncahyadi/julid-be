@@ -27,7 +27,7 @@ SECRET_KEY = '3_8=pu^r+s_bhce7(e(!00sk^+9r0rw%=b+1d=rhn#p!q3l+rb'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["julidhunter.herokuapp.com", "localhost"]
 
 
 # Application definition
@@ -81,15 +81,18 @@ WSGI_APPLICATION = 'julid.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+SITE_ID = 1
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'julid',
-        'USER': os.environ.get('DB_USER', 'root'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'rootpw'), 
+        'USER': 'root',
+        'PASSWORD': 'rootpw',
     }
 }
 
+# DB_URL = os.getenv('DB_URL')
+# DATABASES['default'] = dj_database_url.parse(DB_URL, conn_max_age=600)
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -127,11 +130,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.1/howto/static-files/
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 
@@ -162,6 +160,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_datatables.pagination.DatatablesPageNumberPagination',
     'PAGE_SIZE': 10,
 }
+
+django_heroku.settings(locals())
 
 # Logging
 LOGGING_CONFIG = None
