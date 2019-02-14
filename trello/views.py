@@ -18,6 +18,11 @@ class Webhook(APIView):
 
     def post(self, request):
         logging.info(request.data)
+        return HttpResponse('OK')
+
+    def get(self, request):
+        logging.info(request.data)
+        return HttpResponse('OK')
 
 
 def healthz(request):
