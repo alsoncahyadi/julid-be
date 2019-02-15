@@ -198,4 +198,5 @@ else:
     mongo_client = MongoClient("mongodb://admin:admin@localhost:27017/")
     mongo_db = mongo_client["julid"]
 mongo_logs = mongo_db["logs"]
+mongo_logs.create_index([('action_date', DESCENDING), ('_id', DESCENDING)])
 # import pdb; pdb.set_trace()

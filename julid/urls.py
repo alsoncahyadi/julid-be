@@ -23,7 +23,7 @@ import os
 
 router = routers.DefaultRouter()
 router.register('complaints', ComplaintViewSet)
-router.register('logs', LogViewSet)
+router.register('logs', LogViewSet, basename="logs")
 
 
 urlpatterns = [

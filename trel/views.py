@@ -105,6 +105,7 @@ class Webhook(APIView):
                 'comments': card._comments,
                 'attachments': card._attachments,
             },
+            "action_date": dateutil.parser.parse(data['action']['date'])
         }
         return entry
 
