@@ -15,7 +15,7 @@ import dj_database_url
 import django_heroku
 import sys
 
-sys.tracebacklimit=5
+sys.tracebacklimit=30
 
 is_prod = os.getenv('IS_PRODUCTION') == "TRUE"
 
