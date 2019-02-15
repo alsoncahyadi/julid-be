@@ -192,7 +192,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 from pymongo import MongoClient, ASCENDING, DESCENDING
 
 if is_prod:
-    mongo_client = MongoClient("mongodb://{username}:{password}@ds231758.mlab.com:31758/".format(username=os.getenv("MONGO_DB_USERNAME"), password=os.getenv("MONGO_DB_PASSWORD")))
+    mongo_client = MongoClient(os.getenv('MONGODB_URI'))
     mongo_db = mongo_client["heroku_2cs68jn3"]
 else:
     mongo_client = MongoClient("mongodb://admin:admin@localhost:27017/")
