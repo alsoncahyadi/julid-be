@@ -58,7 +58,7 @@ class Webhook(APIView):
 
     def _log_update_card(self, data, **kwargs):
         board = kwargs.get('board', None)
-        list_id = data['action']['display']['entities']['listAfter']['id']
+        list_id = data['action']['data']['list']['id']
         l = board.get_list(list_id)
         card = Card(l, data['action']['data']['card']['id'])
         card.fetch()
@@ -99,7 +99,7 @@ class Webhook(APIView):
     def _act_update_card(self, data, **kwargs):
         translation_key_enum = self._get_enum(e.TranslationKey, data['action']['display']['translationKey'])
         if translation_key_enum == e.TranslationKey.ACTION_MOVE_CARD_FROM_LIST_TO_LIST:
-            card_name = data['action']['data']['card']['name']
+            card_dict = data['action']['data']['card']
             list_id = data['action']['display']['entities']['listAfter']['id']
             action_date = dateutil.parser.parse(data['action']['date'])
             # Map Attribute Type
@@ -116,7 +116,7 @@ class Webhook(APIView):
                 complaint.state = attr[:-3]
                 complaint.save()
             except m.Complaint.DoesNotExist:
-                logging.error("Complaint `{}` Not Found".format(card_name))
+                logging.error("Complaint `{}` Not Found:\n{}".format(card_dict['id'], card_dict['name'])
                 
 
     # Mapper
