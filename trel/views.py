@@ -116,7 +116,7 @@ class Webhook(APIView):
                 complaint.state = attr[:-3]
                 complaint.save()
             except m.Complaint.DoesNotExist:
-                logging.error("Complaint `{}` Not Found:\n{}".format(card_dict['id'], card_dict['name'])
+                logging.error("Complaint `{}` Not Found:\n{}".format(card_dict['id'], card_dict['name']))
                 
 
     # Mapper
