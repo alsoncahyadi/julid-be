@@ -19,7 +19,7 @@ class Label(Enum):
     SERVICE = "5c63ffc591d0c2ddc5c4dc1d"
     PERTANYAAN = "5c63ffc591d0c2ddc5c4dc21"
     MISUH = "5c63ffc591d0c2ddc5c4dc2b"
-    OTHER = "5c63ffc591d0c2ddc5c4dc2a"
+    LAINNYA = "5c63ffc591d0c2ddc5c4dc2a"
 
 class ActionType(Enum):
     UPDATE_CARD = "updateCard"

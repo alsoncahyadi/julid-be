@@ -8,12 +8,13 @@ import os
 import sys
 import inspect
 import django
+import pytz
 
 from InstagramAPI import InstagramAPI
 from datetime import datetime
 from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
-import pytz
+from trello.label import Label
 
 
 tz = pytz.timezone('Pacific/Johnston')
@@ -25,7 +26,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", 'settings')
 sys.path.insert(0,parentdir) 
 django.setup()
 
-from trello.models import Complaint
+from trel.models import Complaint
 
 # load config
 with open('julid/config_scraper.yaml', 'r') as stream:
@@ -46,7 +47,55 @@ def exclude_weird_character(text):
             new_text += char
     return new_text
 
+def get_url_from_media_id(post_or_media_id):
+    prefix = "https://www.instagram.com/p/";
 
+    if '_' in post_or_media_id:
+        post_id = int(post_or_media_id.split('_')[0])
+    else:
+        post_id = int(post_or_media_id)
+
+    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+
+    suffix = ''
+
+    while(post_id > 0):
+        remainder = int(post_id % 64)
+        post_id = (post_id - remainder) / 64
+        suffix = alphabet[remainder] + suffix
+
+    return prefix + suffix
+
+# name = 'Test'
+# desc = 'Test' # Sekalian tambahin url nya(?) url perlu disimpen kah(?) ato bisa diconstruct dari id(?)
+# labels = [e.Label.PENGIRIMAN.value] # from . import enums as e
+# position = 'top'
+#
+# card = client.add_card(name) # add this BEFORE saving to db
+
+from trel import enums as e
+from trel import global_variables as g
+# import enums as e
+
+def add_card_to_trello(complaint): # complaint is a comment
+    name = '@{}: "{}"'.format(complaint['username'], complaint['text'])
+    desc = 'Post : {}'.format(get_url_from_media_id(complaint['media_id']))
+    labels = [g.labels[complaint['category']]]
+    position = 'top'
+
+    card = g.list_complaints.add_card(name, desc=desc, labels=labels, position=position)
+    return card
+
+dummy = {
+    'username': 'alson',
+    'text': 'HaiHaiHai',
+    'category': 'misuh',
+    'media_id': '1979027664496978973_1460855092'
+}
+
+add_card_to_trello(dummy)
+
+exit()
 
 # media_id = '1978173529828450686_1460855092'
 class Wrapper(object):
@@ -204,6 +253,12 @@ class Wrapper(object):
         for comment in comments:
             self.save_complaint(comment)
 
+    def add_complaints_to_trello(self, complaints):
+        for complaint in complaints:
+            if complaint == 'unknown':
+                continue
+            add_card_to_trello(complaint)
+
     def save_complaint(self, complaint): # comments is dictionary
         default_complaint = { 
                                 'text': '-----',
@@ -290,6 +345,9 @@ if __name__ == '__main__':
                 if comments:
                     print("[I] Requesting label..")
                     comments = w.assign_label(comments)
+
+                    print("[I] Save complaint to trello..")
+                    w.add_complaints_to_trello(comments)
 
                     print("[I] Saving to DB..")
                     w.save_complaints(comments)
