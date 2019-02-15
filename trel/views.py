@@ -40,7 +40,9 @@ class Webhook(APIView):
             action_type_enum = self._get_enum(e.ActionType, action_type_str)
             if action_type_enum:
                 self._map_n_act_n_save_log(action_type_enum, data, board=board)
-            logging.info('<LogSaved>')
+                logging.info('<LogSaved> for {}'.format(action_type_str))
+            else:
+                logging.info('<LogNOTSaved> for {}'.format(action_type_str))
             return HttpResponse('OK')
         except:
             return h.error_response(500, "Internal server error")
@@ -56,7 +58,7 @@ class Webhook(APIView):
 
     def _log_update_card(self, data, **kwargs):
         board = kwargs.get('board', None)
-        list_id = data['action']['display']['entities']['listAfter']['id']
+        list_id = data['action']['data']['list']['id']
         l = board.get_list(list_id)
         card = Card(l, data['action']['data']['card']['id'])
         card.fetch()
@@ -80,17 +82,13 @@ class Webhook(APIView):
                 'idList': card.idList,
                 'idBoard': card.idBoard,
                 'idLabels': card.idLabels,
-                'labels': card._labels,
+                'labels': [label.name for label in card.labels] if card.labels else None,
                 'badges': card.badges,
                 'pos': card.pos,
                 'due': card.due,
                 'checked': card.checked,
                 'dateLastActivity': card.dateLastActivity,
-                'customFields': card._customFields,
-                'plugin_data': card._plugin_data,
-                'checklists': card._checklists,
                 'comments': card._comments,
-                'attachments': card._attachments,
             },
             "action_date": dateutil.parser.parse(data['action']['date'])
         }
@@ -101,7 +99,7 @@ class Webhook(APIView):
     def _act_update_card(self, data, **kwargs):
         translation_key_enum = self._get_enum(e.TranslationKey, data['action']['display']['translationKey'])
         if translation_key_enum == e.TranslationKey.ACTION_MOVE_CARD_FROM_LIST_TO_LIST:
-            card_name = data['action']['data']['card']['name']
+            card_dict = data['action']['data']['card']
             list_id = data['action']['display']['entities']['listAfter']['id']
             action_date = dateutil.parser.parse(data['action']['date'])
             # Map Attribute Type
@@ -118,7 +116,7 @@ class Webhook(APIView):
                 complaint.state = attr[:-3]
                 complaint.save()
             except m.Complaint.DoesNotExist:
-                logging.error("Complaint `{}` Not Found".format(card_name))
+                logging.error("Complaint `{}` Not Found:\n{}".format(card_dict['id'], card_dict['name']))
                 
 
     # Mapper
