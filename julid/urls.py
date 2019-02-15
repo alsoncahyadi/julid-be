@@ -22,6 +22,7 @@ from . import views
 import os
 
 router = routers.DefaultRouter()
+router.register('complaints/timeseries', ComplaintTimeseriesViewSet, basename="complaint timeseries")
 router.register('complaints', ComplaintViewSet)
 router.register('logs', LogViewSet, basename="logs")
 

@@ -5,11 +5,12 @@ from django.forms import model_to_dict
 from rest_framework import pagination
 from rest_framework.response import Response
 from rest_framework.fields import SerializerMethodField
-from datetime import datetime
+import dateutil.parser as dp
 from trel.models import *
 from trel import global_variables as g
 from pymongo import ASCENDING, DESCENDING
 from bson import json_util
+from urllib.parse import parse_qs, urlparse
 import json
 
 # Serializer
@@ -23,21 +24,28 @@ class LogSerializer(s.BaseSerializer):
     def to_representation(self, obj):
         return obj
 
-# class LogSerializer(s.ModelSerializer):
-#     class Meta:
-#         model = Log
-#         fields = '__all__'
 
-
+# ViewSet
 class MyList(list):
     def count(self):
         len(self)
 
 
-# ViewSet
 class ComplaintViewSet(viewsets.ModelViewSet):
     queryset = Complaint.objects.all()
     serializer_class = ComplaintSerializer
+
+
+class ComplaintTimeseriesViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = ComplaintSerializer
+    class Meta:
+        ordering = ['-id']
+    
+    def get_queryset(self):
+        queryset = Complaint.objects.all()
+        from_date_time = dp.parse(self.request.GET.get('from', ''))
+        to_date_time = dp.parse(self.request.GET.get('to', ''))
+        return queryset.filter(created_at__range=(from_date_time, to_date_time)).order_by('-id')
 
 
 class LogViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
