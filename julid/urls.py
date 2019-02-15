@@ -31,6 +31,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('trello/', include('trel.urls')),
     path('api/', include(router.urls)),
+    path('kpi/respond/', views.KpiRespond.as_view()),
+    path('kpi/resolve/', views.KpiResolve.as_view()),
     # path('rest-auth/login/$', views.LoginViewCustom.as_view(), name='rest_login'),
     # path('rest-auth/', include('rest_auth.urls')),
 ]

@@ -1,17 +1,15 @@
-from rest_auth.registration.views import LoginView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
-from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from rest_framework.parsers import JSONParser, FormParser
-from rest_framework import permissions
 from django.db import transaction
 from django.db import connection
 from trello.board import Board
 from trello.card import Card
 from trello.trellolist import List
+from julid.helpers import failsafe
 from julid import helpers as h
 from . import models as m
 from . import global_variables as g
@@ -28,17 +26,6 @@ import pdb, dateutil.parser
 # position = 'top'
 #
 # card = client.add_card(name) # add this BEFORE saving to db
-
-def failsafe(text):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except:
-                logging.warning(text, traceback.format_exc(5).splitlines())
-                return None
-        return wrapper
-    return decorator
 
 class Webhook(APIView):
     permission_classes = (AllowAny,)
