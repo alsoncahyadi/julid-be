@@ -41,6 +41,8 @@ class Webhook(APIView):
             if action_type_enum:
                 self._map_n_act_n_save_log(action_type_enum, data, board=board)
                 logging.info('<LogSaved>')
+            else:
+                logging.info('<LogNOTSaved>')
             return HttpResponse('OK')
         except:
             return h.error_response(500, "Internal server error")
