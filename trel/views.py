@@ -80,17 +80,13 @@ class Webhook(APIView):
                 'idList': card.idList,
                 'idBoard': card.idBoard,
                 'idLabels': card.idLabels,
-                'labels': card._labels,
+                'labels': [label.name for label in card.labels] if card.labels else None,
                 'badges': card.badges,
                 'pos': card.pos,
                 'due': card.due,
                 'checked': card.checked,
                 'dateLastActivity': card.dateLastActivity,
-                'customFields': card._customFields,
-                'plugin_data': card._plugin_data,
-                'checklists': card._checklists,
                 'comments': card._comments,
-                'attachments': card._attachments,
             },
             "action_date": dateutil.parser.parse(data['action']['date'])
         }
