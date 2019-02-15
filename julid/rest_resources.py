@@ -28,7 +28,7 @@ class LogSerializer(s.BaseSerializer):
 # ViewSet
 class MyList(list):
     def count(self):
-        len(self)
+        return len(self) if len(self) else 0
 
 
 class ComplaintViewSet(viewsets.ModelViewSet):
