@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('trello', '0002_complaint'),
+        ('trel', '0002_complaint'),
     ]
 
     operations = [
@@ -24,6 +24,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='log',
             name='complaint',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='trello.Complaint', verbose_name='Complaint'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='trel.Complaint', verbose_name='Complaint'),
         ),
     ]

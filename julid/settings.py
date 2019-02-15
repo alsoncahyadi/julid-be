@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 import dj_database_url
 import django_heroku
+import sys
+
+sys.tracebacklimit=5
+
+is_prod = os.getenv('IS_PRODUCTION') == "TRUE"
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,7 +34,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["julidhunter.herokuapp.com", "localhost"]
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,7 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_auth',
-    'trello',
+    'trel',
 ]
 
 MIDDLEWARE = [
@@ -118,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Bangkok'
 
 USE_I18N = True
 
@@ -182,3 +186,16 @@ LOGGING = {
 }
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
+# Mongo DB
+from pymongo import MongoClient, ASCENDING, DESCENDING
+
+if is_prod:
+    mongo_client = MongoClient(os.getenv('MONGODB_URI'))
+    mongo_db = mongo_client["heroku_2cs68jn3"]
+else:
+    mongo_client = MongoClient("mongodb://admin:admin@localhost:27017/")
+    mongo_db = mongo_client["julid"]
+mongo_logs = mongo_db["logs"]
+mongo_logs.create_index([('action_date', DESCENDING), ('_id', DESCENDING)])
+# import pdb; pdb.set_trace()
