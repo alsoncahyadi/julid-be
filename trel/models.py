@@ -23,17 +23,3 @@ class Complaint(m.Model):
     ready_at = m.DateTimeField()
     wip_at = m.DateTimeField()
     resolved_at = m.DateTimeField()
-
-
-class Log(m.Model):
-    class Meta:
-        verbose_name = "Log"
-        verbose_name_plural = "Logs"
-  
-    def __str__(self):
-        super()
-
-    id = m.AutoField(verbose_name="Log ID", primary_key=True)
-    actor = m.CharField(verbose_name="Actor", max_length=32, null=True)
-    action = m.CharField(verbose_name="Action", max_length=32, null=True)
-    complaint = m.ForeignKey(Complaint, verbose_name="Complaint", on_delete=m.SET_NULL, db_index=True, null=True)
