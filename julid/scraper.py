@@ -456,10 +456,10 @@ def get_n_last_media_ids(n=conf['MONITORED_N_LAST_MEDIA_ID'], update_first=False
     return media_ids[0:n]
 
 if __name__ == '__main__':
-    c1 = update_media_ids()
-    c2 = get_n_last_media_ids()
-    scrape_and_save_for_media_id(c1[0])
-    scrape_and_save_for_media_ids(c1[1:3])
+    # c1 = update_media_ids()
+    # c2 = get_n_last_media_ids()
+    # scrape_and_save_for_media_id(c1[0])
+    # scrape_and_save_for_media_ids(c1[1:3])
     # forever_run(False)
     # pdb.set_trace()
     pass
