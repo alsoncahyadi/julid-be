@@ -1,42 +1,50 @@
-import json
-import time
-import yaml
-import pdb
-import requests
-import time
-import os
-import sys
-import inspect
+# SETUP_DJANGO, ADD PARENT DIR
 import django
-import pytz
+import inspect
+import sys
+import os
+import os.path
+import yaml
 
-from InstagramAPI import InstagramAPI
-from datetime import datetime
-from urllib.request import urlopen, Request
-from bs4 import BeautifulSoup
-from trello.label import Label
-
-
-tz = pytz.timezone('Pacific/Johnston')
-
-# setup django
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", 'settings')
-sys.path.insert(0,parentdir) 
-django.setup()
-
-from trel.models import Complaint
-
-# load config
+# LOAD CONFIG
 with open('julid/config_scraper.yaml', 'r') as stream:
     try:
         conf = yaml.load(stream)
     except yaml.YAMLError as exc:
         print(exc)
 
-# neccessary function
 
+# ADD PARENT DIR
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
+
+if conf['DATABASE_SAVE_COMPLAINT'] == 'MYSQL':
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", 'settings')
+    django.setup()
+    from trello.label import Label
+    from trel import enums as e
+    from trel import global_variables as g
+    from trel.models import Complaint
+elif conf['DATABASE_SAVE_COMPLAINT'] == 'FILE':
+    import pickle
+
+import json
+import time
+import pdb
+import requests
+import time
+import pytz
+
+from InstagramAPI import InstagramAPI
+from datetime import datetime
+from urllib.request import urlopen, Request
+from bs4 import BeautifulSoup
+
+tz = pytz.timezone('Pacific/Johnston')
+
+# NECCESSARY FUNCTION
 def get_str_between(text, str1, str2):
     return text.split(str1)[1].split(str2)[0]
 
@@ -49,35 +57,31 @@ def exclude_weird_character(text):
 
 def get_url_from_media_id(post_or_media_id):
     prefix = "https://www.instagram.com/p/";
-
-    if '_' in post_or_media_id:
-        post_id = int(post_or_media_id.split('_')[0])
-    else:
-        post_id = int(post_or_media_id)
-
     alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
-
     suffix = ''
 
-    while(post_id > 0):
-        remainder = int(post_id % 64)
-        post_id = (post_id - remainder) / 64
-        suffix = alphabet[remainder] + suffix
+    try:
+        if '_' in post_or_media_id:
+            post_id = int(post_or_media_id.split('_')[0])
+        else:
+            post_id = int(post_or_media_id)
+
+        while(post_id > 0):
+            remainder = int(post_id % 64)
+            post_id = (post_id - remainder) / 64
+            suffix = alphabet[remainder] + suffix
+    except Exception:
+        return '<invalid media_id: {}>'.format(media_id)
 
     return prefix + suffix
 
-# name = 'Test'
-# desc = 'Test' # Sekalian tambahin url nya(?) url perlu disimpen kah(?) ato bisa diconstruct dari id(?)
-# labels = [e.Label.PENGIRIMAN.value] # from . import enums as e
-# position = 'top'
-#
-# card = client.add_card(name) # add this BEFORE saving to db
-
-from trel import enums as e
-from trel import global_variables as g
-# import enums as e
+def printl(text, type_='i'):
+    if conf['RUNNING_PRINT_LOG']:
+        print('[{}] {} -- {}'.format(type_.upper(), datetime.now().replace(microsecond=0).isoformat(' '), text))
 
 def add_card_to_trello(complaint): # complaint is a comment
+    if not conf['REQUEST_ADD_CARD_TO_TRELLO']:
+        return
     name = '@{}: "{}"'.format(complaint['username'], complaint['text'])
     desc = 'Post : {}'.format(get_url_from_media_id(complaint['media_id']))
     labels = [g.labels[complaint['category']]]
@@ -86,23 +90,21 @@ def add_card_to_trello(complaint): # complaint is a comment
     card = g.list_complaints.add_card(name, desc=desc, labels=labels, position=position)
     return card
 
-dummy = {
-    'username': 'alson',
-    'text': 'HaiHaiHai',
-    'category': 'misuh',
-    'media_id': '1979027664496978973_1460855092'
+DUMMY = {
+    'username': conf['IG_USERNAME'],
+    'text': conf['DUMMY_TEXT'],
+    'category': 'other',
+    'media_id': '------------------------------'
 }
 
-add_card_to_trello(dummy)
+# -----------------------------------------------------------
 
-exit()
 
-# media_id = '1978173529828450686_1460855092'
 class Wrapper(object):
     def __init__(self):
-        self.api = InstagramAPI(conf['USERNAME'], conf['PASS'])
+        self.api = InstagramAPI(conf['IG_USERNAME'], conf['IG_PASS'])
         self.api.login()
-        self.api.getUsernameInfo(str(conf['USERID']))
+        self.api.getUsernameInfo(str(conf['IG_USER_ID']))
         self.set_last_update()
 
 
@@ -122,12 +124,13 @@ class Wrapper(object):
             if self.last_update:
                 older_comment = comments[-1]
                 dt = datetime.utcfromtimestamp(older_comment.get('created_at_utc', 0)).isoformat()
-                if dt <= self.last_update:
-                    comments = [ c for c in comments if datetime.utcfromtimestamp(c.get('created_at_utc', 0)).isoformat() > self.last_update]
+                if dt >= self.last_update:
+                    comments = [ c for c in comments 
+                                 if datetime.utcfromtimestamp(c.get('created_at_utc', 0)).isoformat() > self.last_update]
                     has_more_comments = False
             if has_more_comments:
                 max_id = self.api.LastJson.get('next_max_id', '')
-                time.sleep(1)
+                # time.sleep(0)
 
         comments = [{'post_id': media_id, # media_id
                      'created_at': comment['created_at_utc'],
@@ -152,23 +155,31 @@ class Wrapper(object):
 
         soup = BeautifulSoup(content, 'html.parser')
 
+
+        # the json data is between this shitty strings
+        substring1 = '<script type="text/javascript">window._sharedData = '
+        substring2 = ';</script>'
+
         data = soup.find_all('script')[4]
-        data = get_str_between(str(soup.find_all('script')[4]), '<script type="text/javascript">window._sharedData = ', ';</script>')
+        data = get_str_between(str(soup.find_all('script')[4]), substring1, substring2)
         data = json.loads(data)
 
         media_ids = []
 
         i = 0
         user_id = data['entry_data']['ProfilePage'][0]['graphql']['user']['id']
+
         while True:
             try:
                 media_id = data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media']['edges'][i]['node']['id']
-                media_ids.append(media_id)
+                timestamp = data['entry_data']['ProfilePage'][0]['graphql']['user']['edge_owner_to_timeline_media']['edges'][i]['node']['taken_at_timestamp']
+                media_ids.append({'media_id': media_id, 'timestamp': timestamp})
                 i += 1
             except IndexError:
                 break
 
-        media_ids = ['{}_{}'.format(media_id, user_id) for media_id in media_ids]
+        for i, media_id in enumerate(media_ids):
+            media_ids[i]['media_id'] = '{}_{}'.format(media_id['media_id'], user_id)
 
         return media_ids
 
@@ -181,7 +192,7 @@ class Wrapper(object):
         labels = self.request_label(text, truncate_text=50)
 
         while not labels:
-            print("[E] Error while request labels..")
+            printl("Error while request labels..", type_='e')
             labels = self.request_label(text, truncate_text=75)
 
         for i, label in enumerate(labels):
@@ -202,9 +213,14 @@ class Wrapper(object):
             self.last_update = time_.isoformat()
         else:
             self.last_update = datetime.now().isoformat()
+        printl('Last Update: {}'.format(self.last_update))
 
 
-    def request_label(self, text=[], truncate_text=False, url='http://192.168.38.251:8282/get_classes', slice_text=10, retry=10):
+    def request_label(self, text = [], 
+                            truncate_text = False, 
+                            url = conf['REQUEST_LABEL_URL'],
+                            slice_text = conf['REQUEST_LABEL_SLICE_PER'], 
+                            retry = 10):
         result = []
         i = 0
         count_retry = retry
@@ -216,9 +232,9 @@ class Wrapper(object):
             if i > len(text):
                 break
             try:
-                response = requests.post(url, json={'texts': text[i:i+slice_text]}, 
-                                              headers={"Content-Type":"application/json"}, 
-                                              timeout=1000)
+                response = requests.post(url, json = {'texts': text[i:i+slice_text]}, 
+                                              headers = {"Content-Type":"application/json"}, 
+                                              timeout = 1000)
 
                 if response.ok:
                     response_data = json.loads(response._content)
@@ -226,25 +242,25 @@ class Wrapper(object):
 
                     count_retry = retry
                     result.extend(temp_labels)
-                    print("[I] Get~ ({}/{})".format(i, len(text)))
+                    printl("Label Request Success ~ ({}/{})".format(i, len(text)))
 
                     i = i + slice_text
                 else:
                     if count_retry == 0:
-                        temp_labels = self.requst_label_dummy(text[i:i+slice_text])
+                        temp_labels = self.assign_unknown(text[i:i+slice_text])
                         result.extend(temp_labels)
                         count_retry = retry
                         i = i + slice_text
-                        print("[I] Miss~ ({}/{}), retry ({})".format(i, len(text), count_retry))
+                        printl("Label Request Failed, Assign 'unknown' ({}/{}), retry ({})".format(i, len(text), count_retry))
                     else:
                         count_retry -= 1
-                        print("[I] Miss~ ({}/{}), retry ({})".format(i, len(text), count_retry), end='\r')
-                        time.sleep(1.6)
+                        printl("Label Request Failed.. ({}/{}), retry ({})".format(i, len(text), count_retry), end='\r')
+                        # time.sleep(1.6)
 
-                time.sleep(0.1)
+                # time.sleep(0.1)
 
             except requests.exceptions.ConnectionError:
-                print("Miss~ (ConnectionError)")
+                printl("Miss~ (ConnectionError)")
                 pass    
 
         return result
@@ -276,52 +292,85 @@ class Wrapper(object):
             if key not in complaint:
                 complaint[key] = default_complaint[key]
 
-        Complaint.objects.create(text= complaint['text'],
-                                 state= complaint['state'],
-                                 category= complaint['category'],
-                                 username= complaint['username'],
-                                 post_id= complaint['post_id'],
-                                 comment_id= complaint['comment_id'],
-                                 ready_at= complaint['ready_at'],
-                                 wip_at= complaint['wip_at'],
-                                 resolved_at= complaint['resolved_at'])
+        if conf['DATABASE_SAVE_COMPLAINT'] == 'MYSQL':
+            Complaint.objects.create(text= complaint['text'],
+                                     state= complaint['state'],
+                                     category= complaint['category'],
+                                     username= complaint['username'],
+                                     post_id= complaint['post_id'],
+                                     comment_id= complaint['comment_id'],
+                                     ready_at= complaint['ready_at'],
+                                     wip_at= complaint['wip_at'],
+                                     resolved_at= complaint['resolved_at'])
+
+        elif conf['DATABASE_SAVE_COMPLAINT'] == 'FILE':
+            with open('{}{}.pkl'.format(conf['DATABASE_PREFIX_COMPLAINT_FILE'], complaint['comment_id']), 'wb') as outfile:  
+                pickle.dump(complaint, outfile)
+
 
     def filter_comments(self, comments):
         # filter the comment if it already exist in database or not
         r = []
         for comment in comments:
-            if not Complaint.objects.filter(comment_id= comment['comment_id']).exists():
+            if not self.already_exist(comment):
                 r.append(comment)
         return r
 
-    def requst_label_dummy(self, text=[], url=''):
+    def already_exist(self, comment):
+        if conf['DATABASE_SAVE_COMPLAINT'] == 'MYSQL':
+            if Complaint.objects.filter(instagram_comment_id=comment['comment_id']).exists():
+                return True
+            else:
+                return False
+
+        if conf['DATABASE_SAVE_COMPLAINT'] == 'FILE':
+            if os.path.isfile('{}{}.json'.format(conf['DATABASE_PREFIX_COMPLAINT_FILE'], comment['comment_id'])):
+                return True
+            else:
+                return False
+
+    def assign_unknown(self, text=[], url=''):
         """ 
-            This is dummy function, later it would request to @Geraldi's services
+            Assign 'unknown' label. Used if failed to request label to @Geraldi's services
         """
         result = []
         for i in range(len(text)):
             result.append('unknown')
         return result
 
+    def run_for_media_id(self, media_id, is_return_comments=False):
+        printl("Getting comments, media_id: {}".format(media_id))
+        comments = self.get_comment_from_media_id(media_id, count=100) # later will used 'until'
 
-    def send_to_db(self, comments):
-        """ 
-            Deprecated
-            @Alson, please implement ssave comments to DB here 
-        """
+        if comments:
+            printl("Filter comments..")
+            comments = self.filter_comments(comments) # filter the comment that already exist
+        
+        if not comments: # check if still exist
+            printl("The post with media_id:{} has no new comments".format(media_id))
+            return
 
-        with open('result.json', 'w') as f:
-            f.write(json.dumps(comments))
-        pass
+        printl("Requesting label..")
+        comments = self.assign_label(comments)
+
+        printl("Save complaint to trello..")
+        self.add_complaints_to_trello(comments)
+
+        printl("SAVING TO: {}..".format(conf['DATABASE_SAVE_COMPLAINT']))
+        self.save_complaints(comments)
+
+        return comments if is_return_comments else True
 
 
+# ---------------------------------------------------------------------------------------------------------
 
 
-if __name__ == '__main__':
-    idle_time = conf['UPDATE_EVERY']*60
-    w = Wrapper()
-    user_to_scrap = 'bukalapak'
+w = Wrapper()
+user_to_scrap = conf['IG_USER_TO_SCRAPPED']
 
+# Just go function
+
+def forever_run(update_media_ids=):
     try:
         while True:
             checkpoint = datetime.now()
@@ -329,36 +378,75 @@ if __name__ == '__main__':
             comments = []
 
             # get media id
-            print('[I] Getting media_id from @{}'.format(user_to_scrap))
+            printl('Getting media_id from @{}'.format(user_to_scrap))
             media_ids = w.get_media_id_from_user(user_to_scrap)
 
-            # get comments
+            # for every media_id, get comments
             for i, media_id in enumerate(media_ids):
-                # print("{}..".format(i))
-                print("[I] Getting comments, media_id: {}".format(media_id))
-                comments = w.get_comment_from_media_id(media_id, 10000) # later will used 'until'
-
-                if comments:
-                    print("[I] Filter comments..")
-                    comments = w.filter_comments(comments) # filter the comment that already exist
-                
-                if comments:
-                    print("[I] Requesting label..")
-                    comments = w.assign_label(comments)
-
-                    print("[I] Save complaint to trello..")
-                    w.add_complaints_to_trello(comments)
-
-                    print("[I] Saving to DB..")
-                    w.save_complaints(comments)
-                else:
-                    print("[W] The post with media_id:{} has no new comments".format(media_id))
+                w.run_for_media_id(media_id)
+                break
 
             w.update_last_update(checkpoint)
 
-            print("[I] Idle for {} minutes..".format(int(idle_time/60)))
-            time.sleep(idle_time)
+            printl("Idle for {} minutes..".format(conf['RUNNING_IDLE_TIME']))
+
+            time.sleep(conf['RUNNING_IDLE_TIME']*60)
     except KeyboardInterrupt:
-        # w.save_set_to_file()
-        print("[I] Scrape stopped.")
+        printl("Scrape stopped.")
         pass
+
+def scrape_and_save_for_media_id(media_id):
+    checkpoint = datetime.now()
+    w.run_for_media_id(media_id)
+    w.update_last_update(checkpoint)
+
+def scrape_and_save_for_media_ids(media_ids):
+    checkpoint = datetime.now()
+    for media_id in media_ids:
+        w.run_for_media_id(media_id)
+    w.update_last_update(checkpoint)
+
+def update_media_ids():
+    printl('Updating media ids..')
+    new_media_ids = w.get_media_id_from_user(user_to_scrap)
+
+    # read file first
+    try:
+        with open(conf['MEDIA_ID_SAVE_FILE']) as json_file:  
+            media_ids = json.load(json_file)
+    except Exception as e:
+        printl('{} file not found, rewrite.'.format(conf['MEDIA_ID_SAVE_FILE']), type_='w')
+        media_ids = []
+        pass
+
+    # check new media_id
+    for new_media_id in new_media_ids:
+        new = True
+        for media_id in media_ids:
+            if new_media_id['media_id'] == media_id['media_id']:
+                break
+                new = False
+        if new:
+            media_ids.append(new_media_id)
+
+    # sort
+    media_ids = sorted(media_ids, key=lambda k: k['timestamp'], reverse=True) 
+
+    # write again
+    with open(conf['MEDIA_ID_SAVE_FILE'], 'w') as json_file:  
+        json.dump(media_ids, json_file, indent=4)
+
+    return media_ids
+
+def get_n_last_media_ids(n=conf['MONITORED_N_LAST_MEDIA_ID'], update_first=False):
+    if update_first:
+        media_ids = update_media_ids()
+    else:
+        with open(conf['MEDIA_ID_SAVE_FILE']) as json_file:  
+            media_ids = json.load(json_file)
+
+    return media_ids[0:n]
+
+if __name__ == '__main__':
+    forever_run(False)
+    # pdb.set_trace()

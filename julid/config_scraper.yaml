@@ -1,5 +1,21 @@
-USERNAME: atikazzahra
-PASS: hackafun
-USERID: 1979346958
+IG_USERNAME: is.this.the.real.love 
+IG_PASS: hasudungan
+IG_USER_ID: 1979346958
 
-UPDATE_EVERY: 5
+IG_USER_TO_SCRAPPED: bukalapak
+
+RUNNING_IDLE_TIME: 0 # In minutes. Re-scrape for every this amount of minutes
+RUNNING_PRINT_LOG: true
+
+REQUEST_ADD_CARD_TO_TRELLO: true
+REQUEST_LABEL_URL: http://192.168.38.251:8282/get_classes
+REQUEST_LABEL_SLICE_PER: 100000
+
+DUMMY_TEXT: This is a dummy text for dummy data. Don't be dummy.
+DUMMY_VALID_MEDIA_ID: 1978173529828450686_1460855092
+
+DATABASE_SAVE_COMPLAINT: MYSQL # OPTION: 'MYSQL' OR 'FILE'
+DATABASE_PREFIX_COMPLAINT_FILE: data/comment # OPTION: 'MYSQL' OR 'FILE'
+
+MEDIA_ID_SAVE_FILE: data/media_id_bukalapak.json
+MONITORED_N_LAST_MEDIA_ID: 5
