@@ -3,6 +3,9 @@ Lari di belakang yuk.
 
 
 # Scraper
+```console
+> python julid/scrapper.py
+```
 
 ```python
 
@@ -28,12 +31,13 @@ scrape_and_save_for_media_ids(media_ids)
 update_media_ids()
 """
 	Check if there are new media_id and update media_ids file with new media_id (MEDIA_ID_SAVE_FILE, see config_scraper.yaml)
+	Return type: list
 """
 
 get_n_last_media_ids(n=conf['MONITORED_N_LAST_MEDIA_ID'], update_first=False)
 """
-	Get n last media ids for media_ids file. If update_first=True, it will called get_n_last_media_ids first
-
+	Get n last media ids from media_ids file. If update_first=True, it will called get_n_last_media_ids first.
+	Return type: list
 """
 
 ```
