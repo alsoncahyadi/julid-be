@@ -32,8 +32,6 @@ labels = {
 	'lainnya': Label(trello_client, e.Label.LAINNYA.value, 'Lainnya')
 }
 
-import pdb
-pdb.set_trace()
 from julid import settings as s
 mongo_db = s.mongo_db
 mongo_logs = s.mongo_logs
