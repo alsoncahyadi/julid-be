@@ -259,7 +259,7 @@ class Wrapper(object):
                 # time.sleep(0.1)
 
             except requests.exceptions.ConnectionError:
-                printl("Miss~ (ConnectionError)")
+                printl("Miss~ (ConnectionError)", end='\r')
                 pass    
 
         return result
@@ -423,8 +423,8 @@ def update_media_ids():
         new = True
         for media_id in media_ids:
             if new_media_id['media_id'] == media_id['media_id']:
-                break
                 new = False
+                break
         if new:
             media_ids.append(new_media_id)
 
@@ -435,6 +435,11 @@ def update_media_ids():
     with open(conf['MEDIA_ID_SAVE_FILE'], 'w') as json_file:  
         json.dump(media_ids, json_file, indent=4)
 
+    r = []
+    for media_id in media_ids:
+        r.append(media_id['media_id'])
+    media_ids = r
+
     return media_ids
 
 def get_n_last_media_ids(n=conf['MONITORED_N_LAST_MEDIA_ID'], update_first=False):
@@ -443,10 +448,18 @@ def get_n_last_media_ids(n=conf['MONITORED_N_LAST_MEDIA_ID'], update_first=False
     else:
         with open(conf['MEDIA_ID_SAVE_FILE']) as json_file:  
             media_ids = json.load(json_file)
+        r = []
+        for media_id in media_ids:
+            r.append(media_id['media_id'])
+        media_ids = r
 
     return media_ids[0:n]
 
 if __name__ == '__main__':
+    c1 = update_media_ids()
+    c2 = get_n_last_media_ids()
+    scrape_and_save_for_media_id(c1[0])
+    scrape_and_save_for_media_ids(c1[1:3])
     # forever_run(False)
     # pdb.set_trace()
     pass
