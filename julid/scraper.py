@@ -13,7 +13,6 @@ with open('julid/config_scraper.yaml', 'r') as stream:
     except yaml.YAMLError as exc:
         print(exc)
 
-
 # ADD PARENT DIR
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -76,7 +75,7 @@ def get_url_from_media_id(post_or_media_id):
     return prefix + suffix
 
 def printl(text, type_='i'):
-    if conf['RUNNING_PRINT_LOG']:
+    if conf['PRINT_LOG']:
         print('[{}] {} -- {}'.format(type_.upper(), datetime.now().replace(microsecond=0).isoformat(' '), text))
 
 def add_card_to_trello(complaint): # complaint is a comment
@@ -370,7 +369,7 @@ user_to_scrap = conf['IG_USER_TO_SCRAPPED']
 
 # Just go function
 
-def forever_run(update_media_ids=):
+def forever_run(update_media_ids=True):
     try:
         while True:
             checkpoint = datetime.now()
@@ -448,5 +447,6 @@ def get_n_last_media_ids(n=conf['MONITORED_N_LAST_MEDIA_ID'], update_first=False
     return media_ids[0:n]
 
 if __name__ == '__main__':
-    forever_run(False)
+    # forever_run(False)
     # pdb.set_trace()
+    pass

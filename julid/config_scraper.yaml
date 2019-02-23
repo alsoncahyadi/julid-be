@@ -1,11 +1,16 @@
-IG_USERNAME: is.this.the.real.love 
-IG_PASS: hasudungan
-IG_USER_ID: 1979346958
+# IG account to login the api
+IG_USERNAME: is.this.the.real.love    
+IG_PASS: hasudungan                   
+IG_USER_ID: 1979346958                
 
+# Who to srapped
 IG_USER_TO_SCRAPPED: bukalapak
 
+# Idle Time for forever Run
 RUNNING_IDLE_TIME: 0 # In minutes. Re-scrape for every this amount of minutes
-RUNNING_PRINT_LOG: true
+
+# enable method printl on scrapper.py
+PRINT_LOG: true
 
 REQUEST_ADD_CARD_TO_TRELLO: true
 REQUEST_LABEL_URL: http://192.168.38.251:8282/get_classes
