@@ -58,7 +58,7 @@ class Webhook(APIView):
 
     def _log_update_card(self, data, **kwargs):
         board = kwargs.get('board', None)
-        list_id = data['action']['data']['list']['id']
+        list_id = data['action']['data']['card']['idList']
         l = board.get_list(list_id)
         card = Card(l, data['action']['data']['card']['id'])
         card.fetch()
