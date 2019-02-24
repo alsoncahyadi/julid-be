@@ -45,7 +45,12 @@ class ComplaintTimeseriesViewSet(mixins.ListModelMixin, viewsets.GenericViewSet)
         queryset = Complaint.objects.all()
         from_date_time = dp.parse(self.request.GET.get('from', ''))
         to_date_time = dp.parse(self.request.GET.get('to', ''))
-        return queryset.filter(created_at__range=(from_date_time, to_date_time)).order_by('-id')
+        category = self.request.GET.get('category', 'all').lower()
+
+        if category == 'all':
+            return queryset.filter(created_at__range=(from_date_time, to_date_time)).order_by('-id')
+        else:
+            return queryset.filter(created_at__range=(from_date_time, to_date_time), category=category).order_by('-id')
 
 
 class LogViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
