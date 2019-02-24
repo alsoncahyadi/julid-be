@@ -16,11 +16,15 @@ class KpiMixin():
     def _get_avg_delta(self, begin_state, end_state, limit):
         total_delta = datetime.timedelta(0)
         count = 0
-        for c in m.Complaint.objects.all()[:limit]:
+        for c in m.Complaint.objects.all().order_by('-created_at')[:limit]:
             if not c.wip_at: continue
             delta = (getattr(c, begin_state) - getattr(c, end_state))
             total_delta += delta if delta > 0 else 0
             count += 1
+        logging.info("avg delta, Count: {}".format(count))
+
+        if count == 0:
+            return datetime.timedelta(0)
         return (total_delta / count)
 
 
@@ -28,7 +32,7 @@ class KpiRespond(APIView, KpiMixin):
     permission_classes = (AllowAny,)
     
     def get(self, request):
-        limit = int(request.GET.get('limit', 1000))
+        limit = int(request.GET.get('limit', 10000))
         avg_delta = self._get_avg_delta('created_at', 'wip_at', limit)
         return HttpResponse(str(avg_delta))
 
@@ -37,7 +41,7 @@ class KpiResolve(APIView, KpiMixin):
     permission_classes = (AllowAny,)
     
     def get(self, request):
-        limit = int(request.GET.get('limit', 1000))
+        limit = int(request.GET.get('limit', 10000))
         avg_delta = self._get_avg_delta('wip_at', 'resolved_at', limit)
         return HttpResponse(str(avg_delta))
 
