@@ -201,3 +201,10 @@ else:
     mongo_db = mongo_client["julid"]
 mongo_logs = mongo_db["logs"]
 mongo_logs.create_index([('action_date', DESCENDING), ('_id', DESCENDING)])
+
+import threading
+from .scraper import forever_run
+# Init background task
+thread = threading.Thread(target=forever_run, args=((True,)))
+thread.setDaemon(True)
+thread.start()

@@ -87,6 +87,7 @@ def add_card_to_trello(complaint): # complaint is a comment
     position = 'top'
 
     card = g.list_complaints.add_card(name, desc=desc, labels=labels, position=position)
+    complaint['trello_id'] = card.id
     return card
 
 DUMMY = {
@@ -219,7 +220,7 @@ class Wrapper(object):
                             truncate_text = False, 
                             url = conf['REQUEST_LABEL_URL'],
                             slice_text = conf['REQUEST_LABEL_SLICE_PER'], 
-                            retry = 10):
+                            retry = 3):
         result = []
         i = 0
         count_retry = retry
@@ -253,13 +254,13 @@ class Wrapper(object):
                         printl("Label Request Failed, Assign 'unknown' ({}/{}), retry ({})".format(i, len(text), count_retry))
                     else:
                         count_retry -= 1
-                        printl("Label Request Failed.. ({}/{}), retry ({})".format(i, len(text), count_retry), end='\r')
-                        # time.sleep(1.6)
+                        printl("Label Request Failed.. ({}/{}), retry ({})".format(i, len(text), count_retry))
+                        time.sleep(1.6)
 
-                # time.sleep(0.1)
+                time.sleep(0.1)
 
             except requests.exceptions.ConnectionError:
-                printl("Miss~ (ConnectionError)", end='\r')
+                printl("Miss~ (ConnectionError)")
                 pass    
 
         return result
@@ -272,7 +273,6 @@ class Wrapper(object):
         for complaint in complaints:
             if complaint == 'unknown':
                 continue
-            add_card_to_trello(complaint)
 
     def save_complaint(self, complaint): # comments is dictionary
         default_complaint = { 
@@ -283,8 +283,9 @@ class Wrapper(object):
                                 'post_id': '0',
                                 'comment_id': '0',
                                 'ready_at': datetime.now(tz=tz),
-                                'wip_at': datetime.now(tz=tz),
-                                'resolved_at': datetime.now(tz=tz)
+                                'wip_at': None,
+                                'resolved_at': None,
+                                'trello_id': None
                             }
 
         for key, value in default_complaint.items():
@@ -296,11 +297,12 @@ class Wrapper(object):
                                      state= complaint['state'],
                                      category= complaint['category'],
                                      username= complaint['username'],
-                                     post_id= complaint['post_id'],
-                                     comment_id= complaint['comment_id'],
+                                     instagram_post_id= complaint['post_id'],
+                                     instagram_comment_id= complaint['comment_id'],
                                      ready_at= complaint['ready_at'],
                                      wip_at= complaint['wip_at'],
-                                     resolved_at= complaint['resolved_at'])
+                                     resolved_at= complaint['resolved_at'],
+                                     trello_id=complaint['trello_id'])
 
         elif conf['DATABASE_SAVE_COMPLAINT'] == 'FILE':
             with open('{}{}.pkl'.format(conf['DATABASE_PREFIX_COMPLAINT_FILE'], complaint['comment_id']), 'wb') as outfile:  
@@ -382,8 +384,7 @@ def forever_run(update_media_ids=True):
 
             # for every media_id, get comments
             for i, media_id in enumerate(media_ids):
-                w.run_for_media_id(media_id)
-                break
+                w.run_for_media_id(media_id['media_id'])
 
             w.update_last_update(checkpoint)
 
