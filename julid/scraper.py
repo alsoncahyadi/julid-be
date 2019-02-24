@@ -377,8 +377,8 @@ class Wrapper(object):
         number_of_complaint_added_to_trello = self.add_complaints_to_trello(comments)
         printl(prefix_media_id("There are {} complaint out of {} comments added to trello".format(number_of_complaint_added_to_trello, len(comments)), media_id))
 
-        with open('test.json', 'w') as file:
-            json.dump(comments, file, indent=4)
+        # with open('for_debug.json', 'w') as file:
+        #     json.dump(comments, file, indent=4)
 
         printl(prefix_media_id("Saving {} comment(s) to database..".format(len(comments)), media_id))
         self.save_complaints(comments)
