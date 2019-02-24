@@ -15,7 +15,7 @@ class KpiMixin():
     def _get_avg_delta(self, begin_state, end_state, limit):
         total_delta = datetime.timedelta(0)
         for c in m.Complaint.objects.all()[:limit]:
-            if not c.wip.at: continue
+            if not c.wip_at: continue
             delta = (getattr(c, begin_state) - getattr(c, end_state))
             total_delta += delta if delta > 0 else 0
         return (total_delta / limit)
