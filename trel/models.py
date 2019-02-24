@@ -6,7 +6,13 @@ class Complaint(m.Model):
         verbose_name_plural = "Complaints"
   
     def __str__(self):
-        super()
+        return "ID: {id} | {text}; {state}; {category}; {trello_id}".format(
+            id = self.id,
+            text = self.text[:20],
+            state = self.state,
+            category = self.category,
+            trello_id = self.trello_id,
+        )
 
     id = m.AutoField(verbose_name="Complaint ID", primary_key=True)
     text = m.TextField(verbose_name="Complaint Text")

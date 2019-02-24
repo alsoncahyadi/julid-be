@@ -98,6 +98,7 @@ DATABASES = {
         'NAME': 'julid',
         'USER': 'root',
         'PASSWORD': 'rootpw',
+        'CONN_MAX_AGE': 30,
     }
 }
 
