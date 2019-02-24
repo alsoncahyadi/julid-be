@@ -263,7 +263,6 @@ class Wrapper(object):
                         result.extend(temp_labels)
                         count_retry = retry
                         i = i + slice_text
-                        printl()
                         printl(prefix_media_id("Label Request Failed, Assign 'unknown' ({}/{}), retry ({})".format(i, len(text), count_retry), media_id))
                     else:
                         count_retry -= 1
@@ -285,10 +284,9 @@ class Wrapper(object):
     def add_complaints_to_trello(self, complaints):
         count = 0
         for complaint in complaints:
-            if complaint['category'] in ['unknown', 'lainnya']:
+            if complaint['category'].lower() in ['unknown', 'lainnya', 'other']:
                 continue
-            pdb.set_trace()
-            # add_card_to_trello(complaint)
+            add_card_to_trello(complaint)
             count += 1
         return count
 
@@ -407,13 +405,15 @@ def forever_run(update_media_ids=True):
 
             # for every media_id, get comments
             for i, media_id in enumerate(media_ids):
+                if i >= conf['MONITORED_N_LAST_MEDIA_ID']:
+                    break
                 w.run_for_media_id(media_id['media_id'])
                 if i + 1 != len(media_ids):
                     printl("Go to the next media_id")
 
             w.update_last_update(checkpoint)
 
-            printl("Idle for {} minutes..".format(conf['RUNNING_IDLE_TIME']))
+            printl("Idle for {} seconds..".format(conf['RUNNING_IDLE_TIME']))
 
             time.sleep(conf['RUNNING_IDLE_TIME'])
     except KeyboardInterrupt:
