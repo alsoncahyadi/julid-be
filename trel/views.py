@@ -117,13 +117,13 @@ class Webhook(APIView):
             }.get(list_enum)
             # Save Complaint
             try:
-                complaint = m.Complaint.objects.get(trello_id=1)
+                complaint = m.Complaint.objects.get(trello_id=card_dict['id'])
                 setattr(complaint, attr, action_date)
                 
                 complaint.state = state
                 complaint.save()
             except m.Complaint.DoesNotExist:
-                logging.error("Complaint `{}` Not Found:\n{}".format(card_dict['id'], card_dict['name']))
+                logging.error("From {}, Complaint `{}` Not Found:\n{}".format("<ActUpdateCardError>", card_dict['id'], card_dict['name']))
                 
 
     # Mapper
