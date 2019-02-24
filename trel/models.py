@@ -20,6 +20,6 @@ class Complaint(m.Model):
 
     trello_id = m.CharField(verbose_name="Trello Card ID", max_length = 32, db_index=True, null=True)
     
-    ready_at = m.DateTimeField()
-    wip_at = m.DateTimeField()
-    resolved_at = m.DateTimeField()
+    ready_at = m.DateTimeField(null=True)
+    wip_at = m.DateTimeField(null=True)
+    resolved_at = m.DateTimeField(null=True)

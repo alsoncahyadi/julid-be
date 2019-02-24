@@ -31,7 +31,7 @@ class KpiRespond(APIView, KpiMixin):
     permission_classes = (AllowAny,)
     
     def get(self, request):
-        limit = request.GET.get('limit', 100)
+        limit = int(request.GET.get('limit', 100))
         avg_delta = self._get_avg_delta('created_at', 'wip_at', limit)
         return HttpResponse(str(avg_delta))
 
@@ -40,7 +40,7 @@ class KpiResolve(APIView, KpiMixin):
     permission_classes = (AllowAny,)
     
     def get(self, request):
-        limit = request.GET.get('limit', 100)
+        limit = int(request.GET.get('limit', 100))
         avg_delta = self._get_avg_delta('wip_at', 'resolved_at', limit)
         return HttpResponse(str(avg_delta))
 

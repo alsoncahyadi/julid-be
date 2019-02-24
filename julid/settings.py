@@ -14,6 +14,8 @@ import os
 import dj_database_url
 import django_heroku
 import sys
+from dotenv import load_dotenv
+load_dotenv()
 
 sys.tracebacklimit=30
 
@@ -49,6 +51,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_auth',
     'trel',
+    'background_task',
 ]
 
 MIDDLEWARE = [
@@ -198,4 +201,3 @@ else:
     mongo_db = mongo_client["julid"]
 mongo_logs = mongo_db["logs"]
 mongo_logs.create_index([('action_date', DESCENDING), ('_id', DESCENDING)])
-# import pdb; pdb.set_trace()
