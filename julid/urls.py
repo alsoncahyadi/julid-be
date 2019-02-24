@@ -34,7 +34,8 @@ def run_background(update_media_ids = True):
 import threading
 thread = threading.Thread(target=run_background, args=((True,)))
 thread.setDaemon(True)
-thread.start()
+if os.getenv('RUN_BACKGROUND') and os.getenv('RUN_BACKGROUND').upper() == "TRUE":
+    thread.start()
 
 urlpatterns = [
     path('admin/', admin.site.urls),
