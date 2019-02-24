@@ -90,12 +90,11 @@ def add_card_to_trello(complaint): # complaint is a comment
     if not conf['REQUEST_ADD_CARD_TO_TRELLO']:
         return
     name = '@{}: "{}"'.format(complaint['username'], complaint['text'])
-    desc = 'Post : {}'.format(get_url_from_media_id(complaint['media_id']))
+    desc = 'Post : {}'.format(get_url_from_media_id(complaint['post_id']))
     labels = [g.labels[complaint['category']]]
     position = 'top'
 
     card = g.list_complaints.add_card(name, desc=desc, labels=labels, position=position)
-    complaint['trello_id'] = card.id
     return card
 
 DUMMY = {
@@ -283,10 +282,11 @@ class Wrapper(object):
 
     def add_complaints_to_trello(self, complaints):
         count = 0
-        for complaint in complaints:
+        for i, complaint in enumerate(complaints):
             if complaint['category'].lower() in ['unknown', 'lainnya', 'other']:
                 continue
-            add_card_to_trello(complaint)
+            card = add_card_to_trello(complaint)
+            complaints[i]['trello_id'] = card.id
             count += 1
         return count
 
@@ -303,6 +303,7 @@ class Wrapper(object):
                                 'resolved_at': None,
                                 'trello_id': None
                             }
+
 
         for key, value in default_complaint.items():
             if key not in complaint:
@@ -376,6 +377,9 @@ class Wrapper(object):
         number_of_complaint_added_to_trello = self.add_complaints_to_trello(comments)
         printl(prefix_media_id("There are {} complaint out of {} comments added to trello".format(number_of_complaint_added_to_trello, len(comments)), media_id))
 
+        with open('test.json', 'w') as file:
+            json.dump(comments, file, indent=4)
+
         printl(prefix_media_id("Saving {} comment(s) to database..".format(len(comments)), media_id))
         self.save_complaints(comments)
         printl(prefix_media_id("{} comment(s) saved to database.".format(len(comments)), media_id))
@@ -392,7 +396,7 @@ user_to_scrap = conf['IG_USER_TO_SCRAPPED']
 
 # Just go function
 
-def forever_run(update_media_ids=True):
+def forever_run():
     try:
         while True:
             checkpoint = datetime.now()
@@ -486,6 +490,6 @@ if __name__ == '__main__':
     # c2 = get_n_last_media_ids()
     # scrape_and_save_for_media_id(c1[0])
     # scrape_and_save_for_media_ids(c1[1:3])
-    forever_run(False)
+    forever_run()
     # pdb.set_trace()
     pass

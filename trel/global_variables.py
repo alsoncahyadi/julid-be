@@ -24,9 +24,9 @@ list_done = List(board=board, list_id=e.List.DONE.value)
 
 labels = {
 	'transaksi': Label(trello_client, e.Label.TRANSAKSI.value, 'Transaksi'),
-	'product': Label(trello_client, e.Label.PRODUCT.value, 'Product'),
+	'produk': Label(trello_client, e.Label.PRODUCT.value, 'Product'),
 	'pengiriman': Label(trello_client, e.Label.PENGIRIMAN.value, 'Pengiriman'),
-	'service': Label(trello_client, e.Label.SERVICE.value, 'Service'),
+	'servis': Label(trello_client, e.Label.SERVICE.value, 'Service'),
 	'pertanyaan': Label(trello_client, e.Label.PERTANYAAN.value, 'Pertanyaan'),
 	'misuh': Label(trello_client, e.Label.MISUH.value, 'Misuh'),
 	'lainnya': Label(trello_client, e.Label.LAINNYA.value, 'Lainnya')
