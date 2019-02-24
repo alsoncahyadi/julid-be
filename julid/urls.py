@@ -27,7 +27,7 @@ router.register('complaints', ComplaintViewSet)
 router.register('logs', LogViewSet, basename="logs")
 
 # Init background tasks
-from .scraper import forever_run
+# from .scraper import forever_run
 # forever_run()
 
 urlpatterns = [
