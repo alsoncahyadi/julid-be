@@ -18,7 +18,7 @@ class KpiMixin():
         count = 0
         for c in m.Complaint.objects.all().order_by('-created_at')[:limit]:
             if not (getattr(c, begin_state) and getattr(c, end_state)): continue
-            delta = (getattr(c, begin_state) - getattr(c, end_state))
+            delta = (getattr(c, end_state) - getattr(c, begin_state))
             if delta > datetime.timedelta(0):
                 total_delta += delta
                 count += 1
