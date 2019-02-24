@@ -42,13 +42,27 @@ class KpiResolve(APIView, KpiMixin):
 
 class TotalComplaintPerCategory(APIView):
     permission_classes = (AllowAny,)
-    
-    def get(self, request):
-        complaint_totals = Complaint.objects.all().values('category').annotate(total=Count('category')).order_by('total')
+
+    def _get_total_per_cateogory(self):
+        complaint_totals = Complaint.objects.all().values('category').annotate(total=Count('category'))
         category_dict = {}
         for complaint_total in complaint_totals:
             category_dict[complaint_total['category']] = complaint_total['total']
-        return JsonResponse(category_dict)
+        return category_dict
+    
+    def get(self, request):
+        from itertools import groupby
+        queryset= Complaint.objects.order_by('category', 'state')
+        complaint_dict = {}
+
+        for category, group in groupby(queryset, lambda x: x.category):
+            complaint_dict[category] = {}
+            for state, inner_group in groupby(group, lambda x: x.state):
+                complaint_dict[category][state] = len(list(inner_group))
+
+        complaint_dict['TOTAL'] = self._get_total_per_cateogory()
+
+        return JsonResponse(complaint_dict)
 
 
 
