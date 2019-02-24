@@ -122,6 +122,7 @@ class Webhook(APIView):
                 
                 complaint.state = state
                 complaint.save()
+                logging.info("Complaint `{}` {} Moved, {} = {}".format(card_dict['id'], card_dict['name'], attr, action_date))
             except m.Complaint.DoesNotExist:
                 logging.error("From {}, Complaint `{}` Not Found:\n{}".format("<ActUpdateCardError>", card_dict['id'], card_dict['name']))
                 
