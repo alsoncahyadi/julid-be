@@ -7,6 +7,7 @@ from django.db.models import Count
 from julid.helpers import failsafe
 from julid import helpers as h
 from trel import models as m
+from django.db import connection
 import os, traceback, logging
 import pdb, datetime
 
@@ -14,11 +15,13 @@ import pdb, datetime
 class KpiMixin():
     def _get_avg_delta(self, begin_state, end_state, limit):
         total_delta = datetime.timedelta(0)
+        count = 0
         for c in m.Complaint.objects.all()[:limit]:
             if not c.wip_at: continue
             delta = (getattr(c, begin_state) - getattr(c, end_state))
             total_delta += delta if delta > 0 else 0
-        return (total_delta / limit)
+            count += 1
+        return (total_delta / count)
 
 
 class KpiRespond(APIView, KpiMixin):
@@ -61,7 +64,6 @@ class TotalComplaintPerCategory(APIView):
                 complaint_dict[category][state] = len(list(inner_group))
 
         complaint_dict['TOTAL'] = self._get_total_per_cateogory()
-
         return JsonResponse(complaint_dict)
 
 
