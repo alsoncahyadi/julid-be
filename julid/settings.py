@@ -206,9 +206,12 @@ else:
 mongo_logs = mongo_db["logs"]
 mongo_logs.create_index([('action_date', DESCENDING), ('_id', DESCENDING)])
 
-import threading
-from .scraper import forever_run
+def run_background(update_media_ids = True):
+    from .scraper import forever_run
+    forever_run(update_media_ids)
+
 # Init background task
-thread = threading.Thread(target=forever_run, args=((True,)))
+import threading
+thread = threading.Thread(target=run_background, args=((True,)))
 thread.setDaemon(True)
 thread.start()
