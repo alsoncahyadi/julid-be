@@ -26,13 +26,20 @@ router.register('complaints/timeseries', ComplaintTimeseriesViewSet, basename="c
 router.register('complaints', ComplaintViewSet)
 router.register('logs', LogViewSet, basename="logs")
 
-# Init background tasks
-# from .scraper import forever_run
-# forever_run()
+def run_background(update_media_ids = True):
+    from .scraper import forever_run
+    forever_run(update_media_ids)
+
+# Init background task
+import threading
+thread = threading.Thread(target=run_background, args=((True,)))
+thread.setDaemon(True)
+thread.start()
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('trello/', include('trel.urls')),
+    path('api/complaints/total-per-category/', views.TotalComplaintPerCategory.as_view()),
     path('api/', include(router.urls)),
     path('kpi/response/', views.KpiRespond.as_view()),
     path('kpi/resolve/', views.KpiResolve.as_view()),

@@ -1,7 +1,7 @@
 asn1crypto==0.24.0
 beautifulsoup4==4.7.1
 bs4==0.0.1
-certifi==2018.10.15
+certifi==2018.11.29
 cffi==1.11.5
 chardet==3.0.4
 cryptography==2.5
@@ -13,6 +13,7 @@ Django==2.1.7
 django-allauth==0.38.0
 django-background-tasks==1.2.0
 django-compat==1.0.15
+django-cors-headers==2.4.0
 django-filter==2.0.0
 django-heroku==0.3.1
 django-rest-auth==0.9.3

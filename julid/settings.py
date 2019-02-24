@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'allauth',
     'rest_framework',
     'rest_framework.authtoken',
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -190,6 +192,8 @@ LOGGING = {
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
+CORS_ORIGIN_ALLOW_ALL = True
+
 # Mongo DB
 from pymongo import MongoClient, ASCENDING, DESCENDING
 
@@ -201,10 +205,3 @@ else:
     mongo_db = mongo_client["julid"]
 mongo_logs = mongo_db["logs"]
 mongo_logs.create_index([('action_date', DESCENDING), ('_id', DESCENDING)])
-
-import threading
-from .scraper import forever_run
-# Init background task
-thread = threading.Thread(target=forever_run, args=((True,)))
-thread.setDaemon(True)
-thread.start()

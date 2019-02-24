@@ -144,7 +144,6 @@ class Webhook(APIView):
         return Enum(value)
         
 
-
 def healthz(request):
     permissions.IsAuthenticated()
     return HttpResponse("OK")
