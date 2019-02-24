@@ -390,7 +390,7 @@ def forever_run(update_media_ids=True):
 
             printl("Idle for {} minutes..".format(conf['RUNNING_IDLE_TIME']))
 
-            time.sleep(conf['RUNNING_IDLE_TIME']*60)
+            time.sleep(conf['RUNNING_IDLE_TIME'])
     except KeyboardInterrupt:
         printl("Scrape stopped.")
         pass
