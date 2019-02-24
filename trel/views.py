@@ -109,11 +109,18 @@ class Webhook(APIView):
                 e.List.ON_PROGRESS: 'wip_at',
                 e.List.DONE: 'resolved_at',
             }.get(list_enum)
+
+            state = {
+                e.List.COMPLAINTS: 0,
+                e.List.ON_PROGRESS: 1,
+                e.List.DONE: 2,
+            }.get(list_enum)
             # Save Complaint
             try:
                 complaint = m.Complaint.objects.get(trello_id=1)
                 setattr(complaint, attr, action_date)
-                complaint.state = attr[:-3]
+                
+                complaint.state = state
                 complaint.save()
             except m.Complaint.DoesNotExist:
                 logging.error("Complaint `{}` Not Found:\n{}".format(card_dict['id'], card_dict['name']))
