@@ -11,14 +11,6 @@ import os, traceback, logging
 import pdb, datetime
 
 
-# # FOR RAMOS:
-# name = 'Test'
-# desc = 'Test' # Sekalian tambahin url nya(?) url perlu disimpen kah(?) ato bisa diconstruct dari id(?)
-# labels = [e.Label.PENGIRIMAN.value] # from . import enums as e
-# position = 'top'
-#
-# card = client.add_card(name) # add this BEFORE saving to db
-
 class KpiMixin():
     def _get_avg_delta(self, begin_state, end_state, limit):
         total_delta = datetime.timedelta(0)
