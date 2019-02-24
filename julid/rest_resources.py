@@ -11,6 +11,7 @@ from trel import global_variables as g
 from pymongo import ASCENDING, DESCENDING
 from bson import json_util
 from urllib.parse import parse_qs, urlparse
+from django.db.models import Q
 import json
 
 # Serializer
@@ -32,7 +33,7 @@ class MyList(list):
 
 
 class ComplaintViewSet(viewsets.ModelViewSet):
-    queryset = Complaint.objects.all()
+    queryset = Complaint.objects.filter(~Q(category__in = ['unknown', 'lainnya']))
     serializer_class = ComplaintSerializer
 
 
@@ -45,7 +46,12 @@ class ComplaintTimeseriesViewSet(mixins.ListModelMixin, viewsets.GenericViewSet)
         queryset = Complaint.objects.all()
         from_date_time = dp.parse(self.request.GET.get('from', ''))
         to_date_time = dp.parse(self.request.GET.get('to', ''))
-        return queryset.filter(created_at__range=(from_date_time, to_date_time)).order_by('-id')
+        category = self.request.GET.get('category', 'all').lower()
+
+        if category == 'all':
+            return queryset.filter(created_at__range=(from_date_time, to_date_time)).filter(~Q(category__in = ['unknown', 'lainnya'])).order_by('-id')
+        else:
+            return queryset.filter(created_at__range=(from_date_time, to_date_time), category=category).order_by('-id')
 
 
 class LogViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
