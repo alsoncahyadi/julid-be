@@ -10,7 +10,7 @@ class Complaint(m.Model):
 
     id = m.AutoField(verbose_name="Complaint ID", primary_key=True)
     text = m.TextField(verbose_name="Complaint Text")
-    state = m.IntegerField(verbose_name="State")
+    state = m.IntegerField(verbose_name="State", db_index=True)
     category = m.CharField(verbose_name="Category", max_length = 10, db_index=True)
     instagram_post_id = m.CharField(verbose_name="Instagram Post ID", max_length = 35, null=True)
     instagram_comment_id = m.CharField(verbose_name="Instagram Comment ID", max_length = 20, null=True, db_index=True)
