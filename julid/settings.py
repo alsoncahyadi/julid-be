@@ -66,8 +66,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
-
 ROOT_URLCONF = 'julid.urls'
 
 TEMPLATES = [
@@ -193,6 +191,8 @@ LOGGING = {
 }
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Mongo DB
 from pymongo import MongoClient, ASCENDING, DESCENDING
