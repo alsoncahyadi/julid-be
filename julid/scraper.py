@@ -44,6 +44,14 @@ from bs4 import BeautifulSoup
 tz = pytz.timezone('Pacific/Johnston')
 
 # NECCESSARY FUNCTION
+
+def prefix_media_id(text, media_id):
+    try:
+        text = '[media_id: {}] {}'.format(media_id.split('_')[0], text)
+    except:
+        text = text
+    return text
+
 def get_str_between(text, str1, str2):
     return text.split(str1)[1].split(str2)[0]
 
@@ -184,16 +192,16 @@ class Wrapper(object):
         return media_ids
 
 
-    def assign_label(self, comments):
+    def assign_label(self, comments, media_id):
         text = [comment['text'] for comment in comments]
 
         if not text:
             return []
-        labels = self.request_label(text, truncate_text=50)
+        labels = self.request_label(text, media_id=media_id)
 
         while not labels:
-            printl("Error while request labels..", type_='e')
-            labels = self.request_label(text, truncate_text=75)
+            printl(prefix_media_id("Requesting label incomplete, retry", media_id))
+            labels = self.request_label(text, media_id=media_id)
 
         for i, label in enumerate(labels):
             comments[i]['category'] = label
@@ -213,10 +221,11 @@ class Wrapper(object):
             self.last_update = time_.isoformat()
         else:
             self.last_update = datetime.now().isoformat()
-        printl('Last Update: {}'.format(self.last_update))
+        printl('Last update checkpoint: {}'.format(self.last_update))
 
 
     def request_label(self, text = [], 
+                            media_id = '<unassigned>', 
                             truncate_text = False, 
                             url = conf['REQUEST_LABEL_URL'],
                             slice_text = conf['REQUEST_LABEL_SLICE_PER'], 
@@ -225,6 +234,8 @@ class Wrapper(object):
         i = 0
         count_retry = retry
 
+        slice_text = min(slice_text, len(text))
+
         if truncate_text:
             text = [line[0:truncate_text] for line in text]
 
@@ -232,9 +243,10 @@ class Wrapper(object):
             if i > len(text):
                 break
             try:
+                if len(text[i:i+slice_text]) <= 0 :
+                    break
                 response = requests.post(url, json = {'texts': text[i:i+slice_text]}, 
-                                              headers = {"Content-Type":"application/json"}, 
-                                              timeout = 1000)
+                                              headers = {"Content-Type":"application/json"})
 
                 if response.ok:
                     response_data = json.loads(response._content)
@@ -242,7 +254,7 @@ class Wrapper(object):
 
                     count_retry = retry
                     result.extend(temp_labels)
-                    printl("Label Request Success ~ ({}/{})".format(i, len(text)))
+                    printl(prefix_media_id("Request label to {}: SUCCESS ({}/{})".format(url, i, len(text)), media_id))
 
                     i = i + slice_text
                 else:
@@ -251,13 +263,14 @@ class Wrapper(object):
                         result.extend(temp_labels)
                         count_retry = retry
                         i = i + slice_text
-                        printl("Label Request Failed, Assign 'unknown' ({}/{}), retry ({})".format(i, len(text), count_retry))
+                        printl()
+                        printl(prefix_media_id("Label Request Failed, Assign 'unknown' ({}/{}), retry ({})".format(i, len(text), count_retry), media_id))
                     else:
                         count_retry -= 1
-                        printl("Label Request Failed.. ({}/{}), retry ({})".format(i, len(text), count_retry))
-                        time.sleep(1.6)
+                        printl(prefix_media_id("Label Request Failed.. ({}/{}), retry ({})".format(i, len(text), count_retry), media_id))
+                        # time.sleep(1.6)
 
-                time.sleep(0.1)
+                # time.sleep(0.1)
 
             except requests.exceptions.ConnectionError:
                 printl("Miss~ (ConnectionError)")
@@ -270,9 +283,14 @@ class Wrapper(object):
             self.save_complaint(comment)
 
     def add_complaints_to_trello(self, complaints):
+        count = 0
         for complaint in complaints:
-            if complaint == 'unknown':
+            if complaint['category'] in ['unknown', 'lainnya']:
                 continue
+            pdb.set_trace()
+            # add_card_to_trello(complaint)
+            count += 1
+        return count
 
     def save_complaint(self, complaint): # comments is dictionary
         default_complaint = { 
@@ -340,27 +358,32 @@ class Wrapper(object):
         return result
 
     def run_for_media_id(self, media_id, is_return_comments=False):
-        printl("Getting comments, media_id: {}".format(media_id))
+        printl(prefix_media_id("Getting comment(s)", media_id))
         comments = self.get_comment_from_media_id(media_id, count=100) # later will used 'until'
+        printl(prefix_media_id("Got {} comment(s)".format(len(comments)), media_id))
 
         if comments:
-            printl("Filter comments..")
+            printl(prefix_media_id("Filtering {} comment(s)..".format(len(comments)), media_id))
             comments = self.filter_comments(comments) # filter the comment that already exist
-        
-        if not comments: # check if still exist
-            printl("The post with media_id:{} has no new comments".format(media_id))
+            printl(prefix_media_id("Comments filtered, got {} comment(s)".format(len(comments)), media_id))
+        else: # check if still exist
+            printl(prefix_media_id("Got no new comments", media_id))
             return
 
-        printl("Requesting label to {} for media_id {}..".format(conf['REQUEST_LABEL_URL'], media_id))
-        comments = self.assign_label(comments)
+        printl(prefix_media_id("Requesting label to {} ({} comments)".format(conf['REQUEST_LABEL_URL'], len(comments)), media_id))
+        comments = self.assign_label(comments, media_id=media_id)
+        printl(prefix_media_id("Request label to {} ({} comments) done".format(conf['REQUEST_LABEL_URL'], len(comments)), media_id))
 
-        printl("Save complaint to trello..")
-        self.add_complaints_to_trello(comments)
+        printl(prefix_media_id("Adding comment(s) to trello..".format(conf['REQUEST_LABEL_URL'], len(comments)), media_id))
+        number_of_complaint_added_to_trello = self.add_complaints_to_trello(comments)
+        printl(prefix_media_id("There are {} complaint out of {} comments added to trello".format(number_of_complaint_added_to_trello, len(comments)), media_id))
 
-        printl("SAVING TO: {}..".format(conf['DATABASE_SAVE_COMPLAINT']))
+        printl(prefix_media_id("Saving {} comment(s) to database..".format(len(comments)), media_id))
         self.save_complaints(comments)
+        printl(prefix_media_id("{} comment(s) saved to database.".format(len(comments)), media_id))
 
         return comments if is_return_comments else True
+
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -385,6 +408,8 @@ def forever_run(update_media_ids=True):
             # for every media_id, get comments
             for i, media_id in enumerate(media_ids):
                 w.run_for_media_id(media_id['media_id'])
+                if i + 1 != len(media_ids):
+                    printl("Go to the next media_id")
 
             w.update_last_update(checkpoint)
 
@@ -461,6 +486,6 @@ if __name__ == '__main__':
     # c2 = get_n_last_media_ids()
     # scrape_and_save_for_media_id(c1[0])
     # scrape_and_save_for_media_ids(c1[1:3])
-    # forever_run(False)
+    forever_run(False)
     # pdb.set_trace()
     pass
