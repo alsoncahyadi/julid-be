@@ -19,8 +19,9 @@ class KpiMixin():
         for c in m.Complaint.objects.all().order_by('-created_at')[:limit]:
             if not (getattr(c, begin_state) and getattr(c, end_state)): continue
             delta = (getattr(c, begin_state) - getattr(c, end_state))
-            total_delta += delta
-            count += 1
+            if delta > datetime.timedelta(0):
+                total_delta += delta
+                count += 1
         logging.info("avg delta, Count: {}".format(count))
 
         if count == 0:
