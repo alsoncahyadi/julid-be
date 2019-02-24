@@ -39,6 +39,7 @@ thread.start()
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('trello/', include('trel.urls')),
+    path('api/complaints/total-per-category/', views.TotalComplaintPerCategory.as_view()),
     path('api/', include(router.urls)),
     path('kpi/response/', views.KpiRespond.as_view()),
     path('kpi/resolve/', views.KpiResolve.as_view()),

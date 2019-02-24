@@ -2,6 +2,8 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from django.http import HttpResponse, JsonResponse
+from trel.models import Complaint
+from django.db.models import Count
 from julid.helpers import failsafe
 from julid import helpers as h
 from trel import models as m
@@ -43,6 +45,19 @@ class KpiResolve(APIView, KpiMixin):
         limit = int(request.GET.get('limit', 100))
         avg_delta = self._get_avg_delta('wip_at', 'resolved_at', limit)
         return HttpResponse(str(avg_delta))
+
+
+
+class TotalComplaintPerCategory(APIView):
+    permission_classes = (AllowAny,)
+    
+    def get(self, request):
+        complaint_totals = Complaint.objects.all().values('category').annotate(total=Count('category')).order_by('total')
+        category_dict = {}
+        for complaint_total in complaint_totals:
+            category_dict[complaint_total['category']] = complaint_total['total']
+        return JsonResponse(category_dict)
+
 
 
 def healthz(request):
