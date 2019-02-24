@@ -351,7 +351,7 @@ class Wrapper(object):
             printl("The post with media_id:{} has no new comments".format(media_id))
             return
 
-        printl("Requesting label..")
+        printl("Requesting label to {} for media_id {}..".format(conf['REQUEST_LABEL_URL'], media_id))
         comments = self.assign_label(comments)
 
         printl("Save complaint to trello..")
