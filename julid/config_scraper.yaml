@@ -13,8 +13,8 @@ RUNNING_IDLE_TIME: 30 # In seconds. Re-scrape for every this amount of minutes
 PRINT_LOG: true
 
 REQUEST_ADD_CARD_TO_TRELLO: true
-# REQUEST_LABEL_URL: http://192.168.38.251:8282/get_classes
-REQUEST_LABEL_URL: https://julid-ai.herokuapp.com/get_classes
+REQUEST_LABEL_URL: http://192.168.38.251:8282/get_classes
+# REQUEST_LABEL_URL: https://julid-ai.herokuapp.com/get_classes
 REQUEST_LABEL_SLICE_PER: 100000
 
 DUMMY_TEXT: This is a dummy text for dummy data. Don't be dummy.
