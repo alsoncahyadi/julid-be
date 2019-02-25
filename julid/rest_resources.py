@@ -33,7 +33,7 @@ class MyList(list):
 
 
 class ComplaintViewSet(viewsets.ModelViewSet):
-    queryset = Complaint.objects.filter(~Q(category__in = ['unknown', 'lainnya']))
+    queryset = Complaint.objects.filter(~Q(category__in = ['unknown', 'lainnya'])).order_by('-updated_at')
     serializer_class = ComplaintSerializer
 
 
