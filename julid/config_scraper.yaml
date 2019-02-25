@@ -7,7 +7,7 @@ IG_USER_ID: 1979346958
 IG_USER_TO_SCRAPPED: bukalapak
 
 # Idle Time for forever Run
-RUNNING_IDLE_TIME: 5 # In seconds. Re-scrape for every this amount of minutes
+RUNNING_IDLE_TIME: 10 # In seconds. Re-scrape for every this amount of minutes
 
 # enable method printl on scrapper.py
 PRINT_LOG: true
