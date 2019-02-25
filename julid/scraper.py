@@ -40,6 +40,7 @@ from InstagramAPI import InstagramAPI
 from datetime import datetime
 from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
+from django import db
 
 tz = pytz.timezone('Pacific/Johnston')
 
@@ -310,6 +311,7 @@ class Wrapper(object):
                 complaint[key] = default_complaint[key]
 
         if conf['DATABASE_SAVE_COMPLAINT'] == 'MYSQL':
+            db.connections.close_all()
             Complaint.objects.create(text= complaint['text'],
                                      state= complaint['state'],
                                      category= complaint['category'],
@@ -336,6 +338,7 @@ class Wrapper(object):
 
     def already_exist(self, comment):
         if conf['DATABASE_SAVE_COMPLAINT'] == 'MYSQL':
+            db.connections.close_all()
             if Complaint.objects.filter(instagram_comment_id=comment['comment_id']).exists():
                 return True
             else:

@@ -11,6 +11,7 @@ from trello.card import Card
 from trello.trellolist import List
 from julid.helpers import failsafe
 from julid import helpers as h
+from django import db
 from . import models as m
 from . import global_variables as g
 from . import enums as e
@@ -120,6 +121,7 @@ class Webhook(APIView):
             }.get(list_enum)
             # Save Complaint
             try:
+                db.connections.close_all()
                 complaint = m.Complaint.objects.get(trello_id=card_dict['id'])
                 setattr(complaint, attr, action_date)
                 
